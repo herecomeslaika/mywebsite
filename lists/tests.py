@@ -7,24 +7,7 @@ class HomePageTest(TestCase):
         response = self.client.get('/')
         self.assertTemplateUsed(response, 'home.html')
 
-    def test_can_save_a_POST_request(self):
-        self.client.post('/', data={'item_text': 'A new list item'})
-        
-        self.assertEqual(Item.objects.count(), 1)
-        new_item = Item.objects.first()
-        self.assertEqual(new_item.text, 'A new list item')
 
-    # 新增一个方法，专门测重定向
-    def test_redirects_after_POST(self):
-        response = self.client.post('/', data={'item_text': 'A new list item'})
-        self.assertEqual(response.status_code, 302)
-        # 【修改这里】：将重定向的目标改成假想的新 URL
-        self.assertEqual(response['location'], '/lists/the-new-page/')
-    # 核心改动 2：新增测试，确保只是访问首页时，不会往数据库存空数据
-    def test_only_saves_items_when_necessary(self):
-        self.client.get('/')
-        self.assertEqual(Item.objects.count(), 0)
-class ItemModelTest(TestCase):
 
     def test_saving_and_retrieving_items(self):
         first_item = Item()
@@ -57,3 +40,16 @@ class ListViewTest(TestCase):
     def test_uses_list_template(self):
         response = self.client.get('/lists/the-new-page/')
         self.assertTemplateUsed(response, 'list.html')
+class NewListTest(TestCase):
+
+    def test_can_save_a_POST_request(self):
+        # 注意：这里的目标 URL 变成了 /lists/new
+        self.client.post('/lists/new', data={'item_text': 'A new list item'})
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'A new list item')
+
+    def test_redirects_after_POST(self):
+        response = self.client.post('/lists/new', data={'item_text': 'A new list item'})
+        # 使用 Django 的超强快捷断言，一行顶过去两行
+        self.assertRedirects(response, '/lists/the-new-page/')
