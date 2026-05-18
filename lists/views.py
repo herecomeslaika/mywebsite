@@ -4,10 +4,13 @@ from lists.models import Item
 def home_page(request):
     if request.method == 'POST':
         Item.objects.create(text=request.POST['item_text'])
-        return redirect('/')
-
-    # 去数据库里把所有的 Item 都查出来，放到一个叫 items 的变量里
-    items = Item.objects.all()
+        # 【修改这里】：处理完 POST 请求后，硬编码重定向到新 URL
+        return redirect('/lists/the-new-page/')
     
-    # 把 items 打包成字典，传给 home.html
-    return render(request, 'home.html', {'items': items})
+    # 首页现在彻底清闲了，不需要查数据库，直接返回一个空模板即可
+    return render(request, 'home.html')
+
+# 【新增函数】：专门负责展示待办清单的新主厨
+def view_list(request):
+    items = Item.objects.all()
+    return render(request, 'list.html', {'items': items})

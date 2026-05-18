@@ -13,22 +13,13 @@ class HomePageTest(TestCase):
         self.assertEqual(Item.objects.count(), 1)
         new_item = Item.objects.first()
         self.assertEqual(new_item.text, 'A new list item')
-    def test_displays_all_list_items(self):
-        # 1. 悄悄往数据库里塞两条测试数据
-        Item.objects.create(text='itemey 1')
-        Item.objects.create(text='itemey 2')
 
-        # 2. 访问首页
-        response = self.client.get('/')
-
-        # 3. 检查网页的源代码里，有没有包含这两句话
-        self.assertIn('itemey 1', response.content.decode())
-        self.assertIn('itemey 2', response.content.decode())
     # 新增一个方法，专门测重定向
     def test_redirects_after_POST(self):
         response = self.client.post('/', data={'item_text': 'A new list item'})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        # 【修改这里】：将重定向的目标改成假想的新 URL
+        self.assertEqual(response['location'], '/lists/the-new-page/')
     # 核心改动 2：新增测试，确保只是访问首页时，不会往数据库存空数据
     def test_only_saves_items_when_necessary(self):
         self.client.get('/')
@@ -51,3 +42,18 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, 'The first list item')
         self.assertEqual(second_saved_item.text, 'Item the second')
+class ListViewTest(TestCase):
+
+    def test_displays_all_list_items(self):
+        Item.objects.create(text='itemey 1')
+        Item.objects.create(text='itemey 2')
+
+        # 【注意这里】：请求的是新 URL，而不是首页 '/'
+        response = self.client.get('/lists/the-new-page/')
+
+        # assertContains 是个好东西，它能同时检查状态码 200 和页面内容
+        self.assertContains(response, 'itemey 1')
+        self.assertContains(response, 'itemey 2')
+    def test_uses_list_template(self):
+        response = self.client.get('/lists/the-new-page/')
+        self.assertTemplateUsed(response, 'list.html')
