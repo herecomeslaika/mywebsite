@@ -103,3 +103,30 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertIn('Buy milk', page_text)
 
         # 两人都很满意，去睡觉了
+    def test_layout_and_styling(self):
+        # 张三访问首页
+        self.browser.get(self.live_server_url)
+        # 强制设置浏览器窗口大小，保证测试环境的一致性
+        self.browser.set_window_size(1024, 768)
+
+        # 她看到输入框完美地居中显示
+        inputbox = self.browser.find_element(By.ID, 'id_new_item')
+        # 计算公式：输入框的 X 坐标 + 输入框宽度的一半 = 屏幕中心点
+        # 1024 / 2 = 512，我们允许有 10 像素的误差 (delta=10)
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2,
+            512,
+            delta=10
+        )
+
+        # 她新建一个清单，看到输入框仍完美地居中显示
+        inputbox.send_keys('testing')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: testing')
+        
+        inputbox = self.browser.find_element(By.ID, 'id_new_item')
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2,
+            512,
+            delta=10
+        )
