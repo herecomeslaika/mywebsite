@@ -1,11 +1,11 @@
 from django.contrib import admin
-from django.urls import path
-from lists import views  # 引入我们自己写的 views
+from django.urls import path, re_path  # 【注意】：这里新增了 re_path 的导入
+from lists import views
 
 urlpatterns = [
-    # path('admin/', admin.site.urls), # 这一行注释掉或者留着都没关系
     path('', views.home_page, name='home'),
     path('lists/new', views.new_list, name='new_list'),
-    # 【新增这一行】：配置属于那个新页面的专属路由
-    path('lists/the-new-page/', views.view_list, name='view_list'),
+    re_path(r'^lists/(\d+)/$', views.view_list, name='view_list'),
+    # 【新增下面这行】：专门处理追加事项的请求
+    re_path(r'^lists/(\d+)/add_item$', views.add_item, name='add_item'),
 ]

@@ -1,38 +1,24 @@
 from django.shortcuts import render, redirect
-from lists.models import Item
 from lists.models import Item, List
+
+# 1. 首页主厨：只负责渲染空表单
 def home_page(request):
-    if request.method == 'POST':
-        Item.objects.create(text=request.POST['item_text'])
-        # 【修改这里】：处理完 POST 请求后，硬编码重定向到新 URL
-        return redirect('/lists/the-new-page/')
-    
-    # 首页现在彻底清闲了，不需要查数据库，直接返回一个空模板即可
     return render(request, 'home.html')
 
-# 【新增函数】：专门负责展示待办清单的新主厨
-def view_list(request):
-    items = Item.objects.all()
-    return render(request, 'list.html', {'items': items})
-# lists/views.py 完整内容如下
+# 2. 专属展示页主厨：负责查出当前清单，并把它传给前端
+def view_list(request, list_id):
+    list_user = List.objects.get(id=list_id)
+    # 【核心修复】：字典里的键必须是 'list'，和前端模板保持绝对一致！
+    return render(request, 'list.html', {'list': list_user})
 
-from django.shortcuts import render, redirect
-from lists.models import Item
-
-def home_page(request):
-    # 首页现在彻底变成了纯展示页面，啥也不用管了
-    return render(request, 'home.html')
-
-def view_list(request):
-    # 专属展示页，负责查数据和渲染
-    items = Item.objects.all()
-    return render(request, 'list.html', {'items': items})
-
-# 【全新主厨】：专门负责处理新建清单的 POST 请求
+# 3. 新建清单主厨：创建新 List 和第一条 Item
 def new_list(request):
-    # 1. 先在数据库里创建一个全新的空清单
     list_user = List.objects.create()
-    # 2. 创建待办事项时，把它挂在这个新清单的名下
     Item.objects.create(text=request.POST['item_text'], list=list_user)
-    # 3. 依然先踢回到那个假想的页面
-    return redirect('/lists/the-new-page/')
+    return redirect(f'/lists/{list_user.id}/')
+
+# 4. 追加事项主厨：找到已有 List，直接追加 Item
+def add_item(request, list_id):
+    list_user = List.objects.get(id=list_id)
+    Item.objects.create(text=request.POST['item_text'], list=list_user)
+    return redirect(f'/lists/{list_user.id}/')
