@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from lists.models import Item
-
+from lists.models import Item, List
 def home_page(request):
     if request.method == 'POST':
         Item.objects.create(text=request.POST['item_text'])
@@ -30,7 +30,9 @@ def view_list(request):
 
 # 【全新主厨】：专门负责处理新建清单的 POST 请求
 def new_list(request):
-    # 接收数据，存入数据库
-    Item.objects.create(text=request.POST['item_text'])
-    # 存完之后，把用户踢到那个假想的专属展示页
+    # 1. 先在数据库里创建一个全新的空清单
+    list_user = List.objects.create()
+    # 2. 创建待办事项时，把它挂在这个新清单的名下
+    Item.objects.create(text=request.POST['item_text'], list=list_user)
+    # 3. 依然先踢回到那个假想的页面
     return redirect('/lists/the-new-page/')

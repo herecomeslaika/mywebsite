@@ -1,5 +1,9 @@
 from django.db import models
 
+class List(models.Model): # 修改了这里
+    pass
+
 class Item(models.Model):
-    # 给模型增加一个 text 属性，类型是“文本类型”，默认值为空字符串
     text = models.TextField(default='')
+    # 新增下面这行：用外键关联 List，级联删除，给个默认值
+    list = models.ForeignKey(List, on_delete=models.CASCADE, default=None)
