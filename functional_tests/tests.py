@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.common.exceptions import WebDriverException
 import time
+import os
 from lists.models import Item, List
 MAX_WAIT = 10
 
@@ -130,3 +131,12 @@ class NewVisitorTest(StaticLiveServerTestCase):
             512,
             delta=10
         )
+class NewVisitorTest(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.browser = webdriver.Chrome()
+        # 尝试获取真实服务器的地址
+        real_server = os.environ.get('REAL_SERVER')
+        # 如果拿到了，就把测试网址替换成真实的 URL
+        if real_server:
+            self.live_server_url = 'http://' + real_server
